@@ -1,0 +1,219 @@
+---
+title: "R Notebook"
+output:
+  html_document:
+    df_print: paged
+---
+
+This is an [R Markdown](http://rmarkdown.rstudio.com) Notebook. When you execute code within the notebook, the results appear beneath the code. 
+
+Try executing this chunk by clicking the *Run* button within the chunk or by placing your cursor inside it and pressing *Ctrl+Shift+Enter*. 
+
+```{r}
+plot(cars)
+```
+
+Add a new chunk by clicking the *Insert Chunk* button on the toolbar or by pressing *Ctrl+Alt+I*.
+
+When you save the notebook, an HTML file containing the code and output will be saved alongside it (click the *Preview* button or press *Ctrl+Shift+K* to preview the HTML file).
+
+The preview shows you a rendered HTML copy of the contents of the editor. Consequently, unlike *Knit*, *Preview* does not run any R code chunks. Instead, the output of the chunk when it was last run in the editor is displayed.
+
+
+
+White Wine Quality Exploration by Orlando Neto
+========================================================
+
+```{r echo=FALSE, message=FALSE, warning=FALSE, packages}
+# Carregue aqui todos os pacotes utilizados 
+# na sua análise realizada neste arquivo fonte.
+
+# Note que o parâmetro "echo" foi definido como FALSE neste código.
+# Isso previne que o código apresente resultados formatados em HTML.
+# Você deve definir echo=FALSE para todos os blocos de código no seu arquivo.
+
+library(ggplot2)
+library(reshape)
+```
+
+```{r echo=FALSE, Load_the_Data}
+# Carregamento dos dados
+data <- read.csv('wineQualityWhites.csv', sep=',')
+```
+
+# Seção de Gráficos Univariados
+```{r echo=FALSE, Univariate_Plots}
+qplot(x=quality, data=data, binwidth=1) +
+  ylab('Qtde.') +
+  ggtitle('Quantidade das notas de quality')
+qplot(x=alcohol, data=data) +
+  ylab('Qtde.') +
+  ggtitle('Quantidade de alcohol') 
+qplot(x=pH, data=data) +
+  ylab('Qtde.') +
+  ggtitle('Quantidade de pH')
+qplot(x=density, data=data) +
+  ylab('Qtde.') +
+  ggtitle('Quantidade de density')
+qplot(x=sulphates, data=data) +
+  ylab('Qtde.') +
+  ggtitle('Quantidade de sulphates')
+qplot(x=total.sulfur.dioxide, data=data, binwidth=1) +
+  ylab('Qtde.') +
+  ggtitle('Quantidade de total.sulfur.dioxide')
+qplot(x=residual.sugar, data=data, binwidth=1) +
+  ylab('Qtde.') +
+  ggtitle('Quantidade de residual.sugar')
+
+data$sugar_categ <- ifelse(data$residual.sugar< 1,'less',
+		ifelse(data$residual.sugar>=1 & data$residual.sugar<=45,'normal',
+		ifelse(data$residual.sugar > 45, 'sweet', 'normal')))
+```
+
+# Análise Univariada
+
+### Qual é a estrutura do conjunto de dados?
+> O conjunto de dados possui 4898 linhas e contém 13 atributos
+
+### Quais são os principais atributos de interesse deste conjunto de dados?
+> Os principais atributos do conjunto de dados são: quality, pH, fixed acidity, volatile acidity e citric acid
+
+### Quais outros atributos você acha que podem lhe auxiliar na investigação destes atributos de interesse?
+> Acredito que o atributo alcohol pode auxiliar na investigação
+
+### Você criou novas variáveis a partir dos atributos existentes no conjunto de dados?
+> Criei uma variável chamada sugar_categ que separa o teor de açucar residual entre menor que 1, onde segundo a documentação é baixo, até 45 que é considerado normal e maior que 45 que é considerado auto.
+
+### Dos atributos investigados, distribuições incomuns foram encontradas? Você aplicou operações nos dados para limpá-los, ajustá-los ou mudar a forma dos dados? Se sim, por quê?
+> Conforme a documentação do conjunto de dados diz, não existe valores missing nas colunas, então não foi preciso fazer um processo de ajuste nos dados. 
+
+# Seção de Gráficos Bivariados
+```{r echo=FALSE, Bivariate_Plots}
+ggplot(data, aes(x=quality, y=chlorides)) +
+  geom_line(stat= 'summary', fun.y = median) +
+  geom_line(stat = 'summary', fun.y = mean, linetype = 3) +
+  ggtitle('Relação entre quality e chlorides e mediana')
+
+ggplot(aes(x=quality, y=pH), data=data) +
+  geom_line(aes(color = residual.sugar), stat = 'summary', fun.y = median) +
+    geom_line(stat = 'summary', fun.y = mean, linetype = 3) +
+  ggtitle('Relação entre quality e pH e mediana')
+
+ggplot(aes(x=quality, y=total.sulfur.dioxide), data=data) +
+  geom_line(aes(color = residual.sugar), stat = 'summary', fun.y = median) +
+    geom_line(stat = 'summary', fun.y = mean, linetype = 3) +
+  ggtitle('Relação entre quality e total.sulfur.dioxide e mediana')
+
+ggplot(aes(x=quality, y=alcohol), data=data) + 
+  geom_jitter(alpha=1/4, shape=21, fill=I('#F79420')) +
+  ggtitle('Concentração de alcohol pelas notas de quality')
+
+ggplot(data, aes(x=as.factor(quality), y=alcohol)) +
+  geom_boxplot(outlier.colour="red")
+
+ggplot(data, aes(x=as.factor(quality), y=sulphates)) +
+  geom_boxplot(outlier.colour="red")
+
+ggplot(data, aes(x=as.factor(quality), y=residual.sugar)) +
+  geom_boxplot(outlier.colour="red")
+
+ggplot(data, aes(x=sugar_categ, y=chlorides)) +
+  geom_boxplot(outlier.colour="red")
+
+cor.test(data$quality, data$alcohol)
+cor.test(data$quality, data$pH)
+cor.test(data$quality, data$density)
+cor.test(data$quality, data$total.sulfur.dioxide)
+cor.test(data$quality, data$residual.sugar)
+cor.test(data$quality, data$citric.acid)
+
+ggplot(aes(x=quality, y=chlorides), data=data) +
+  geom_line(aes(color = sugar_categ), stat = 'summary', fun.y = median) +
+    geom_line(stat = 'summary', fun.y = mean, linetype = 3) +
+  ggtitle('Categoria de sugar por chlorides em relação a quality')
+
+```
+
+# Análise Bivariada
+
+### Discuta sobre alguns dos relacionamentos observados nesta parte da investigação. Como os atributos de interesse variaram no conjunto de dados?
+> Acredito existir uma relação muito forte entre alcohol e quality e pH com quality
+
+### Você observou algum relacionamento interessante entre os outros atributos (os que não são de interesse)?
+> Ainda não observei nenhum atributo interessante entre os outros atributos.
+
+### Qual foi o relacionamento mais forte encontrado?
+> Segundo a correlação o relacionamento mais forte esta entre quality e density com um valor de correlação de -0.3071233 e alcohol com 0.4355747.
+
+# Seção de Gráficos Multivariados
+
+```{r echo=FALSE, Multivariate_Plots}
+qplot(data=data, x=chlorides, y=density,
+     colour=alcohol) +
+  coord_trans(x = 'sqrt') +
+    geom_line(color='orange') +
+  geom_smooth(method = 'lm', color = 'red') +
+  ggtitle('Density por chlorides em relação a alcohol')
+
+meltedJoins <- data[c(4,11,13)] 
+meltedJoins = melt(meltedJoins, id = 'quality')
+
+ggplot(meltedJoins, aes(x = quality, y = value, colour = variable)) + 
+  geom_line(stat = 'summary') + 
+  coord_trans(x = 'sqrt') +
+  scale_colour_manual(values=c("gray", "blue")) +
+  ggtitle('Relação entre citric.acid vs sulphates')
+```
+
+# Análise Multivariada
+
+### Discuta sobre os relacionamentos observados nesta parte da investigação. Quais atributos que fortaleceram os demais na observação das variáveis de interesse?
+> Existe uma forte relação entre citric.acid e sulphates, ou seja, quando o sulphates diminui o citric.acid aumenta no sentido das melhores classificações.
+
+### Interações surpreendentes e/ou interessantes foram encontradas entre os atributos?
+> Existe uma interação entre chlorides e density baseado na variável alcohol que pode ser entendida talvez utilizando um algoritmo de machine learning de regreção linear.
+
+### OPCIONAL: Modelos foram criados usando este conjunto de dados? Discuta sobre os pontos fortes e as limitações do seu modelo.
+
+------
+
+# Gráficos Finais e Sumário
+
+### Primeiro Gráfico
+```{r echo=FALSE, Plot_One}
+ggplot(aes(x=quality, y=chlorides), data=data) +
+  geom_line(stat = 'summary', fun.y = median) +
+    geom_line(stat = 'summary', fun.y = mean, linetype = 3) +
+  ggtitle('Relação entre quality e chlorides e mediana')
+```
+
+### Descrição do Primeiro Gráfico
+> O primeiro gráfico mostra a relação entre a quality do vinho e a chlorides que é a porcentagem de sal no vinho. É perceptivel que quanto menos quantidade melhor é a qualidade do vinho.
+
+### Segundo Gráfico
+```{r echo=FALSE, Plot_Two}
+ggplot(meltedJoins, aes(x = quality, y = value, colour = variable)) + 
+  geom_line(stat = 'summary') + 
+  coord_trans(x = 'sqrt') +
+  scale_colour_manual(values=c("gray", "blue")) +
+  ggtitle('Relação entre citric.acid vs sulphates')
+```
+
+### Descrição do Segundo Gráfico
+> Este segundo gráfico mostra a relação de citric.acid e sulphates todos eles relacionados à qualidade. 
+
+### Terceiro Gráfico
+```{r echo=FALSE, Plot_Three}
+ggplot(data, aes(x=as.factor(quality), y=sulphates)) +
+  geom_boxplot(outlier.colour="red")
+```
+
+### Descrição do Terceiro Gráfico
+>O terceiro gráfico mostra como na escala da nota quatro ate a nota 9 temos outliers na distribuição dos dados. Outro ponto a ser considerado é que temos uma mediana para quase todas as distribuições variando muito pouco.
+
+------
+
+# Reflexão
+>A base de dados de vinhos é excelente, pois não foi necessário realizar um processo de pré-processamento dos dados para tratar N/A, junção entre variáveis entre outros. Analisei as variáveis separadamente para se ter uma idea de correlação entre as variáveis e observar comportamentos dos dados no conjunto. 
+>Identifiquei uma regressão linear nos dados o que pode talvez ser comprovado utilizando algum algoritmo de machine learning. O modelo é limitado e deveria conter mais registros e variáveis para se ter uma análise mais rica do comportamento dos dados.
+>A maior dificuldade na análise foi descobrir quais variáveis seriam importantes para determinar o que realmente influência na qualidade de um vinho. 
